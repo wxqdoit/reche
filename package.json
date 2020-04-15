@@ -1,6 +1,6 @@
 {
   "name": "reche",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "File upload in chunks",
   "main": "dist/reche.js",
   "scripts": {
@@ -20,7 +20,9 @@
     "url": "https://github.com/wxqdoit/reche/issues"
   },
   "homepage": "https://github.com/wxqdoit/reche#readme",
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
+    "vuepress": "^1.4.0",
     "@babel/core": "^7.9.0",
     "@babel/plugin-transform-runtime": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
@@ -48,8 +50,5 @@
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0",
     "watchify": "^3.11.1"
-  },
-  "devDependencies": {
-    "vuepress": "^1.4.0"
   }
 }

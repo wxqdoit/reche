@@ -121,7 +121,9 @@ class Reche {
      */
     remove(fileId) {
         if (this.fileMap[fileId]) {
-            if(this.fileMap[fileId].status === this.fileStatus.onCanceled || this.fileMap[fileId].status === this.fileStatus.onCompleted){
+            if(this.fileMap[fileId].status === this.fileStatus.onCanceled ||
+                this.fileMap[fileId].status === this.fileStatus.onCompleted ||
+                this.fileMap[fileId].status === this.fileStatus.onError){
                 delete this.fileMap[fileId];
                 this.queue.removeFileChunk(fileId);
                 this.abortAndRemoveXhr(fileId);

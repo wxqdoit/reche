@@ -5,9 +5,10 @@ module.exports = {
         repo: 'wxqdoit/reche',
         editLinks: false,
         docsDir: 'docs',
+        nextLinks: false,
+        prevLinks: false,
         nav: [
             { text: '主页', link: '/' },
-            { text: 'Guide', link: '/guide' },
         ]
     }
 }

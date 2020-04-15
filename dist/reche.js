@@ -273,8 +273,6 @@ var Option = /*#__PURE__*/function () {
       //使用分片上传时文件最小大小 默认10M
       path: '',
       //上传接口 如果开启分片上传而没有chunkInitPath和chunkPath时 使用path
-      chunkInitPath: '',
-      //分片上传初始化接口 chunkInitPath和chunkPath应该合并
       chunkPath: '',
       //分片上传接口
       timeout: 1000 * 60 * 60,
@@ -747,7 +745,7 @@ var Reche = /*#__PURE__*/function () {
     key: "remove",
     value: function remove(fileId) {
       if (this.fileMap[fileId]) {
-        if (this.fileMap[fileId].status === this.fileStatus.onCanceled || this.fileMap[fileId].status === this.fileStatus.onCompleted) {
+        if (this.fileMap[fileId].status === this.fileStatus.onCanceled || this.fileMap[fileId].status === this.fileStatus.onCompleted || this.fileMap[fileId].status === this.fileStatus.onError) {
           delete this.fileMap[fileId];
           this.queue.removeFileChunk(fileId);
           this.abortAndRemoveXhr(fileId);

@@ -65,7 +65,7 @@
                                 v-if="item.status == 3">继续
                         </button>
                         <button type="button" class="btn btn-secondary btn-sm" @click='remove(item.fileId)'
-                                v-if="item.status == 2 || item.status == 5">删除
+                                v-if="item.status == 2 || item.status == 4 || item.status == 5">删除
                         </button>
                         <button type="button" class="btn btn-secondary btn-sm" @click='restart(item.fileId)'
                                 v-if='item.status == 5'>重新上传
