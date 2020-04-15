@@ -1,0 +1,55 @@
+{
+  "name": "reche",
+  "version": "0.0.1",
+  "description": "File upload in chunks",
+  "main": "dist/reche.js",
+  "scripts": {
+    "dev": "gulp watch",
+    "build": "gulp release"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wxqdoit/reche.git"
+  },
+  "keywords": [
+    "reche"
+  ],
+  "author": "wxqdoit",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wxqdoit/reche/issues"
+  },
+  "homepage": "https://github.com/wxqdoit/reche#readme",
+  "dependencies": {
+    "@babel/core": "^7.9.0",
+    "@babel/plugin-transform-runtime": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "babel-core": "^6.26.3",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babelify": "^10.0.0",
+    "browser-sync": "^2.26.7",
+    "browserify": "^16.5.1",
+    "browserify-derequire": "^1.0.1",
+    "browserify-versionify": "^1.0.6",
+    "del": "^5.1.0",
+    "es6-promise": "^4.2.8",
+    "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
+    "gulp-cli": "^2.2.0",
+    "gulp-eslint": "^6.0.0",
+    "gulp-rename": "^2.0.0",
+    "gulp-sourcemaps": "^2.6.5",
+    "gulp-uglify": "^3.0.2",
+    "gulp-watch": "^5.0.1",
+    "opn": "^6.0.0",
+    "randomstring": "^1.1.5",
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-source-stream": "^2.0.0",
+    "watchify": "^3.11.1"
+  },
+  "devDependencies": {
+    "vuepress": "^1.4.0"
+  }
+}
