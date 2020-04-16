@@ -3,6 +3,7 @@ sidebar: auto
 ---
 
 # 指南
+
 # Reche
 文件分片断点上传
 
@@ -52,36 +53,52 @@ $("#upload").click(function(){
 })
 ```
 
-
+CommonJS规范引入
+```js
+let Reche = require('reche');
+let r = new Reche(Object)
+r.reche(Object)
+``` 
 
 ## 配置项
 ### option
 | 名称                 | 默认值                               | 描述                                                                 |
 | -------------------- | ------------------------------------| --------------------------------------------------------------------|
-| chunkUse             | [Boolean] true                      | 是否开启分片上传 默认不开启                                            |
+| chunkUse             | [Boolean] true                      | 是否开启分片上传 默认开启                                              |
 | chunkSize            | [Number] 5 << 20 （5M）             | 分片大小 默认5M                                                       |
-| chunkUseSize         | [Number] 10 << 20  （10M）          | 使用分片上传时文件最小大小 默认10M                                      |
+| chunkUseSize         | [Number] 10 << 20 （10M）           | 使用分片上传时文件最小大小 默认10M                                      |
 | path                 | [String] ''                         | 普通文件上传接口                                                      |
 | chunkPath            | [String] ''                         | 分片上传接口                                                          |
 | timeout              | [Number] 1000 * 60 *60              | 请求超时时间 默认1小时                                                 |
-| chunkThreadNumber    | [Number] 5                          | 分片上传时，开启的线程数                                               |
-| lang                 | [String] 'zh-cn'                    | 语言                                                                 |
-| async                | [Boolean] true                      | 是否开启异步                                                          |
-| headers              | [Object] {}[#headers](#headers)     | 设置请求头                                                            |
+| chunkThreadNumber    | [Number] 5                          | 分片上传时开启的任务数(目前仅实现单人位，暂不可用)                         |
+| chunkFirstResParamKey| [Object][#chunkFirstResParamKey](#chunkFirstResParamKey)| 分配上传时第一片上传完成返回的数据中需要回传的参数key                      |
+| lang                 | [String] 'zh-cn'                    | 语言(暂不可用)                                                        |
+| async                | [Boolean] true                      | 是否开启异步(设置为false将监听不到上传进度)                              |
+| headers              | [Object] [#headers](#headers)       | 设置自定义请求头                                                       |
 | fdKey                | [Object] [#fdKey](#fdKey)           | 设置分片上传字段的自定义key                                             |
+
+### chunkFirstResParamKey
+- 分配上传时第一片上传完成返回的数据中需要回传的参数key
+- 默认为：
+```js
+chunkFirstResParamKey = {
+    uploadId: 'uploadId',
+    fileName: 'fileName'
+};
+```
 
 ### headers
 - 设置用自定义的请求头
-- 默认为空对象
+- 默认为空对象{}
 
 ### fdKey
 ```js
 fdKey = {
-    fileKey: 'file',
-    chunkKey:'chunk',
-    chunksKey:'chunks',
-    indexKey:'index',
-    fileNameKey:'fileName',
+    fileKey: 'file',//文件(片)的key
+    chunkKey:'chunk',//当前片数索引key
+    chunksKey:'chunks',//总片数key
+    indexKey:'index',//[暂时保留，没有用处]
+    fileNameKey:'fileName',//文件名的key
 }
 ```
 
@@ -142,7 +159,8 @@ recheEvents = [
     "fileAppend",//文件添加到任务列表
     "fileCompleteAll",//本次选择的文件上传任务全部完成
     "fileProgress",//文件上传进度改变
-    "fileStatusChange"//文件状态改变
+    "fileStatusChange",//文件状态改变
+    "fileError"//文件上传失败
 ]
 ```
 
@@ -184,9 +202,8 @@ recheEvents = [
     - event.fileId
     - event.event
     - event.status
-                                     
-
-
-
-
-
+    
+- `reche.on('fileError',callBack)`：文件上传失败，包括请求失败和服务器返回错误
+    - event.fileId
+    - event.event
+    - event.xhr

@@ -21,10 +21,7 @@ export default class FileSlice {
             percent: 0,
             fileChunk: []
         };
-        if (file.size <= this.reche.option.chunkUseSize) {
-            //普通
-            fileSliced.file = file
-        } else {
+        if(this.reche.option.chunkUse && file.size >= this.reche.option.chunkUseSize){
             let index = 0; //切片索引
             let start = 0; //切片开始位置
             let end = 0; //切片结束位置
@@ -48,6 +45,9 @@ export default class FileSlice {
                 chunkObj.fileChunkSize = chunk.size;
                 fileSliced.fileChunk.push(chunkObj)
             }
+        }else{
+            //普通
+            fileSliced.file = file
         }
         return fileSliced
     }

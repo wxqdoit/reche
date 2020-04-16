@@ -1,9 +1,11 @@
 {
   "name": "reche",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "File upload in chunks",
   "main": "dist/reche.js",
   "scripts": {
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs",
     "dev": "gulp watch",
     "build": "gulp release"
   },

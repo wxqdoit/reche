@@ -39,30 +39,26 @@ function doBundle(b) {
         .on('error', console.error.bind(console))
         .pipe(source('reche.js'))
         .pipe(buffer())
+
+        .pipe(uglify({
+            mangle: false,//类型：Boolean 默认：true 是否修改变量名
+            //删除注释
+            output: {
+                comments: false
+            },
+            compress: true
+        }))
         .pipe(sourcemaps.init({loadMaps: true}))
         .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest('./dist/'));
 }
-
-function doLint(paths, exit) {
-    return gulp.src(paths)
-        .pipe(eslint())
-        .pipe(eslint.format())
-        .pipe(exit ? eslint.failAfterError() : eslint.result(function () {
-        }));
-}
-
-gulp.task('lint', function () {
-    return doLint(['gulpfile.js', 'src/**/*.js'], true);
-});
-
 
 gulp.task('watch', function () {
     let gulpWatcher = gulp.watch(['gulpfile.js', 'src/**/*.js']);
 
     gulpWatcher.on('change', function (e) {
         if (e.type === 'changed' || e.type === 'added') {
-            return doLint(e.path, false);
+            //return doLint(e.path, false);
         }
     });
 
@@ -79,7 +75,7 @@ gulp.task('watch', function () {
 });
 
 
-gulp.task('build', gulp.series('lint'), function () {
+gulp.task('build', function () {
     let b = browserify({
         entries: 'src/index.js',
         debug: true,
@@ -91,30 +87,21 @@ gulp.task('build', gulp.series('lint'), function () {
     return doBundle(b);
 });
 
-gulp.task('minimize', gulp.series('lint', 'build'), function () {
-    let options = {
-        sourceMap: true,
-        sourceMapIncludeSources: true,
-        sourceMapRoot: './src/',
-        mangle: true,
-        compress: {
-            sequences: true,
-            dead_code: true,
-            conditionals: true,
-            booleans: true,
-            unused: true,
-            if_return: true,
-            join_vars: true
-        }
+gulp.task('minimize', gulp.series( 'build'), function () {
+    let options =  {
+        mangle: false,//类型：Boolean 默认：true 是否修改变量名
+        //删除注释
+        output: {
+            comments: false
+        },
+        compress: true
     };
+
 
     return gulp.src('dist/reche.js')
         .pipe(rename({extname: '.min.js'}))
-        .pipe(sourcemaps.init({loadMaps: true}))
         .pipe(uglify(options))
-        .on('error', console.error.bind(console))
-        .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest('./dist/'));
 });
-gulp.task('default', gulp.series('lint', 'build'));
-gulp.task('release', gulp.series('lint', 'build', 'minimize'));
+gulp.task('default', gulp.series('build'));
+gulp.task('release', gulp.series('build', 'minimize'));

@@ -23,7 +23,7 @@ export default class Xhr {
         if (this.reche.option.async) {
             xhr.timeout = this.reche.option.timeout;
             xhr.upload.ontimeout = (e) => {
-                console.log('ontimeout::', e);
+                this.xhrError(this.fileOrChunk.fileId,xhr);
             };
         }
         xhr.upload.onprogress = (e) => {
@@ -46,6 +46,7 @@ export default class Xhr {
                     progress = totalUpSize / this.reche.fileMap[this.fileOrChunk.fileId].fileSize
                 }
             }
+
             this.reche.fileMap[this.fileOrChunk.fileId].progress = progress;
             this.reche.event.trigger('fileProgress', {
                 event: 'event:::fileProgress',
@@ -54,10 +55,7 @@ export default class Xhr {
             });
         };
         xhr.upload.onerror = (e) => {
-            console.log('onerror::', e);
-        };
-        xhr.upload.onabort = (e) => {
-            console.log('onabort::', e);
+            this.xhrError(this.fileOrChunk.fileId,xhr);
         };
         xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
@@ -103,11 +101,12 @@ export default class Xhr {
                             this.reche.exeXhr()
                         }
                     } else {
-                        // todo 请求成功但是上传失败
+                        console.log(resJson)
+                        this.xhrError(this.fileOrChunk.fileId,xhr)
+
                     }
                 } else {
-                    // todo 请求失败
-
+                    this.xhrError(this.fileOrChunk.fileId,xhr);
                 }
             }
         };
@@ -130,6 +129,16 @@ export default class Xhr {
             this.setXhrHeader(this.xhr,this.reche.option.headers);
             this.xhr.send(fd)
         }
+    }
+    xhrError(fileId,xhr){
+        this.reche.abortAndRemoveXhr(fileId);
+        this.reche.queue.deleteChunkOfQueue(fileId);
+        this.reche.changeFileStatus(fileId,null,null,this.reche.fileStatus.onError)
+        this.reche.event.trigger('fileError', {
+            event: 'event:::fileError',
+            fileId: fileId,
+            xhr:xhr
+        });
     }
 
     /**

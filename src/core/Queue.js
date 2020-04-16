@@ -22,8 +22,8 @@ export default class Queue {
             fileChunkOnWaiting: [],//等待上传的队列
             fileChunkOnProgress: [],//正在上传的队列
             fileChunkOnCompleted: [],//上传成功的队列
-            fileChunkOnError: [],//上传失败的队列
-            fileChunkStopped: [],//暂停中的文件
+            // fileChunkOnError: [],//上传失败的队列
+            // fileChunkStopped: [],//暂停中的文件
         }
     }
 
@@ -69,8 +69,7 @@ export default class Queue {
             fileChunkOnWaiting: [],
             fileChunkOnProgress: [],
             fileChunkOnCompleted: [],
-            fileChunkOnError: [],
-            fileChunkStopped: [],
+            // fileChunkStopped: [],
         }
     }
 
@@ -202,9 +201,7 @@ export default class Queue {
             }
         }
         return this.queue.fileChunkOnWaiting.length === 0 &&
-            this.queue.fileChunkStopped.length === 0 &&
             this.queue.fileChunkOnProgress.length === 0 &&
-            this.queue.fileChunkOnError.length === 0 &&
             this.reche.xhrList.length === 0 && statusAllComplete;
     }
 }

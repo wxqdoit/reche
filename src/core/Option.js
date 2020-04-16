@@ -9,15 +9,17 @@ export default class Option {
             chunkUseSize: 10 << 20,//使用分片上传时文件最小大小 默认10M
             path: '',//上传接口 如果开启分片上传而没有chunkInitPath和chunkPath时 使用path
             chunkPath: '',//分片上传接口
-            timeout: 1000 * 60 *60,//请求超时时间 默认1小时
+            timeout: 1000 * 60 * 60,//请求超时时间 默认1小时
             chunkThreadNumber: 5,//分片上传时，开启的线程数，
-            lang:'zh-cn',//语言 默认中文
-            async:true,
-            headers:{},
-            fdKey:{},
+            chunkFirstResParamKey: {},//分配上传时第一片上传完成返回的数据中需要回传的参数key
+            lang: 'zh-cn',//语言 默认中文
+            async: true,
+            headers: {},
+            fdKey: {},
         }
     }
-    optionInit(option){
+
+    optionInit(option) {
         for (const item in this.defaultOption) {
             if (this.defaultOption.hasOwnProperty(item) && !option.hasOwnProperty(item)) {
                 option[item] = this.defaultOption[item];
@@ -25,18 +27,30 @@ export default class Option {
         }
         let fdKey = {
             fileKey: 'file',
-            chunkKey:'chunk',
-            chunksKey:'chunks',
-            indexKey:'index',
-            fileNameKey:'fileName',
+            chunkKey: 'chunk',
+            chunksKey: 'chunks',
+            indexKey: 'index',
+            fileNameKey: 'fileName',
         };
-        if(option.fdKey){
-            for(const item in fdKey){
-                option.fdKey[item] = option.fdKey[item]?option.fdKey[item]:fdKey[item]
+        let chunkFirstResParamKey = {
+            uploadId: 'uploadId',
+            fileName: 'fileName'
+        };
+        if (option.fdKey) {
+            for (const item in fdKey) {
+                option.fdKey[item] = option.fdKey[item] ? option.fdKey[item] : fdKey[item]
             }
-        }else {
+        } else {
             option.fdKey = fdKey
         }
+        if (option.chunkFirstResParamKey) {
+            for (const item in chunkFirstResParamKey) {
+                option.chunkFirstResParamKey[item] = option.chunkFirstResParamKey[item] ? option.chunkFirstResParamKey[item] : chunkFirstResParamKey[item]
+            }
+        } else {
+            option.chunkFirstResParamKey = chunkFirstResParamKey
+        }
+
         return option
     }
 

@@ -14,17 +14,15 @@ export default class Event {
         this.recheEvents = [
             "fileStop",
             "fileResume",
-
             "fileCancel",
             "fileRestart",
-
             "fileRemove",
             "fileRemoveAll",
-
             "fileAppend",
             "fileCompleteAll",
             "fileProgress",
-            "fileStatusChange"
+            "fileStatusChange",
+            "fileError"
         ]
     }
     on(name,callback){
