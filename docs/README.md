@@ -92,13 +92,23 @@ chunkFirstResParamKey = {
 - 默认为空对象{}
 
 ### fdKey
+
 ```js
+//默认配置
 fdKey = {
     fileKey: 'file',//文件(片)的key
     chunkKey:'chunk',//当前片数索引key
     chunksKey:'chunks',//总片数key
-    indexKey:'index',//[暂时保留，没有用处]
     fileNameKey:'fileName',//文件名的key
+    fileChunkSizeKey:"fileChunkSize",//文件块大小key
+    totalSizeKey:"totalSize",//文件总大小key
+};
+//可自定义，如：
+fdKey={
+    fileKey: 'file_obj',
+    chunkKey:'chunk_index',
+    chunksKey:'chunks_number',
+    fileNameKey:'file_name',
 }
 ```
 

@@ -96,13 +96,28 @@ export default class Queue {
         if (fileSliced.file && !fileSliced.fileChunk.length) {
             this.queue.fileChunkOnWaiting.push({
                 fileId: fileSliced.fileId,
-                index: -1,//这是一整个文件
+                data: fileSliced.data,
+                file: fileSliced.file,
+                chunk:-1,//这是一整个文件
+                chunks:0,
+                fileName:fileSliced.fileName,
                 fileChunkSize: fileSliced.fileSize,
-                chunk: fileSliced.file,
-                data: fileSliced.data
+                totalSize:fileSliced.fileSize
             })
         } else {
-            this.queue.fileChunkOnWaiting = this.queue.fileChunkOnWaiting.concat(fileSliced.fileChunk)
+            for(let i = 0;i<fileSliced.fileChunk.length;i++){
+                let obj = {
+                    fileId: fileSliced.fileId,
+                    data: fileSliced.data,
+                    file: fileSliced.fileChunk[i].fileChunkBlob,
+                    chunk:fileSliced.fileChunk[i].chunk,
+                    chunks:fileSliced.fileChunk.length,
+                    fileName:fileSliced.fileName,
+                    fileChunkSize: fileSliced.fileChunk[i].fileChunkSize,
+                    totalSize:fileSliced.fileSize
+                };
+                this.queue.fileChunkOnWaiting.push(obj)
+            }
         }
     }
 
@@ -111,7 +126,7 @@ export default class Queue {
      * 将一个个文件（块）从等待队列转入上传队列
      * @returns {boolean|*}
      */
-    dispatch() {
+    dispatch(threadNumber = null) {
         //判断是否有暂停的任务
         let index = 0;
         let kIndex = -1;
@@ -132,7 +147,7 @@ export default class Queue {
             }
         }
         if (kIndex === this.queue.fileChunkOnWaiting.length - 1) {
-            return false
+            return null
         } else {
             if (this.queue.fileChunkOnWaiting.length) {
                 let fChunk = this.queue.fileChunkOnWaiting.splice(index, 1)[0];
@@ -142,6 +157,10 @@ export default class Queue {
                 console.warn('no fileChunk in fileChunkOnWaiting')
             }
         }
+    }
+
+    _dispatch(){
+
     }
 
     /**

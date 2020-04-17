@@ -6,7 +6,7 @@ export default class FileSlice {
      * 文件分片处理逻辑
      * @param file 原生file
      * @param data 其他參數
-     * @returns {{fileName: *, file: null, fileSize: *, fileChunk: Array, percent: number, fileId: *}}
+     * @returns {{resParam: null, fileName: *, file: null, netSpeed: string, data: *, fileSize: *, progress: number, fileChunk: Array, fileId: string, status: number}}
      */
     fileSlice(file,data) {
         let fileId = this.reche.util.randomString(8);
@@ -15,7 +15,7 @@ export default class FileSlice {
             fileName: file.name,
             fileSize: file.size,
             netSpeed:"",
-            file: null,
+            file:null,
             data:data,
             resParam:null,
             status: this.reche.fileStatus.onWaiting,
@@ -33,17 +33,17 @@ export default class FileSlice {
                 let chunkObj = {
                     fileChunkSize: 0,
                     fileId: fileId,
-                    index: 0,
-                    chunk: null
+                    chunk: 0,
+                    fileChunkBlob: null
                 };
                 start = index * chunkSize;
                 end = start + chunkSize;
                 //切割文件
-                let chunk = file.slice(start, end);
+                let fileChunkBlob = file.slice(start, end);
                 index++;
-                chunkObj.chunk = chunk;
-                chunkObj.index = index;
-                chunkObj.fileChunkSize = chunk.size;
+                chunkObj.fileChunkBlob = fileChunkBlob;
+                chunkObj.chunk = index;
+                chunkObj.fileChunkSize = fileChunkBlob.size;
                 fileSliced.fileChunk.push(chunkObj)
             }
         }else{

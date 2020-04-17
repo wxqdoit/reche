@@ -1,8 +1,8 @@
 {
   "name": "reche",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "File upload in chunks",
-  "main": "dist/reche.js",
+  "main": "dist/reche.min.js",
   "scripts": {
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs",

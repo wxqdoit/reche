@@ -25,24 +25,10 @@ export default class Option {
                 option[item] = this.defaultOption[item];
             }
         }
-        let fdKey = {
-            fileKey: 'file',
-            chunkKey: 'chunk',
-            chunksKey: 'chunks',
-            indexKey: 'index',
-            fileNameKey: 'fileName',
-        };
         let chunkFirstResParamKey = {
             uploadId: 'uploadId',
             fileName: 'fileName'
         };
-        if (option.fdKey) {
-            for (const item in fdKey) {
-                option.fdKey[item] = option.fdKey[item] ? option.fdKey[item] : fdKey[item]
-            }
-        } else {
-            option.fdKey = fdKey
-        }
         if (option.chunkFirstResParamKey) {
             for (const item in chunkFirstResParamKey) {
                 option.chunkFirstResParamKey[item] = option.chunkFirstResParamKey[item] ? option.chunkFirstResParamKey[item] : chunkFirstResParamKey[item]

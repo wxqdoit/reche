@@ -31,6 +31,14 @@ class Reche {
         this.i18n = new I18n(this.option.lang);
         this.queue = new Queue(this);
         this.fileSlice = new FileSlice(this);
+        this.fdKey = {
+            fileKey: 'file',
+            chunkKey: 'chunk',
+            chunksKey: 'chunks',
+            fileNameKey: 'fileName',
+            fileChunkSizeKey:"fileChunkSize",
+            totalSizeKey:"totalSize",
+        };
         this.fileStatus = {
             onWaiting: 0,//等待中
             onProgress: 1,//上传中
@@ -71,13 +79,20 @@ class Reche {
     }
 
     exeXhr() {
+
         if (this.xhrList.length === 0 && this.queue.queue.fileChunkOnWaiting.length) {
-            let fc = this.queue.dispatch();
+            let fc = this.queue.dispatch(this.option.chunkThreadNumber);
             if(fc){
                 let xhr = new Xhr(this);
                 this.xhrList.push(xhr);
                 xhr.sendXhr(fc)
             }
+
+            // for(let i = 0;i<fc.length;i++){
+            //         let xhr = new Xhr(this);
+            //         this.xhrList.push(xhr);
+            //         xhr.sendXhr(fc[i])
+            // }
         }
     }
 
@@ -228,13 +243,10 @@ class Reche {
                  */
                 this.changeFileStatus(fileId,null,null,this.fileStatus.onWaiting);
                 this.queue.appendFileChunkQueue(this.fileMap[fileId]);
-
-
                 this.event.trigger('fileRestart', {
                     event: 'event:::fileRestart',
                     fileId: fileId,
                 });
-
                 this.exeXhr();
             }
         }

@@ -31,7 +31,7 @@ export default class Xhr {
             let progress = 0;
             if (e.lengthComputable) {
                 this.progress = e.loaded / e.total;
-                if (this.fileOrChunk.index === -1) {
+                if (this.fileOrChunk.chunk === -1) {
                     progress = e.loaded / e.total
                 } else {
                     let totalUpSize = 0;
@@ -68,14 +68,14 @@ export default class Xhr {
                         // 这里已经传完了
                         // 1、文件上传队列位置改变
                         let fileOfMap = this.reche.fileMap[this.fileOrChunk.fileId];
-                        // console.log("当前文件总块数：" + fileOfMap.fileChunk.length + "----已完成完成块数：" + this.fileOrChunk.index);
+                        // console.log("当前文件总块数：" + fileOfMap.fileChunk.length + "----已完成完成块数：" + this.fileOrChunk.chunk);
                         this.reche.queue.formProgressToCompleted(this.fileOrChunk);
-                        if (this.fileOrChunk.index === -1) {
+                        if (this.fileOrChunk.chunk === -1) {
                             // 如果是小文件上传
                             this.reche.changeFileStatus(this.fileOrChunk.fileId, null, null, this.reche.fileStatus.onCompleted);
                         } else {
                             // 如果是当前大文件块的第一块 绑定设置回传参数
-                            if (this.fileOrChunk.index === 1) {
+                            if (this.fileOrChunk.chunk === 1) {
                                 let resParam = {};
                                 let cusfrpk = this.reche.option.chunkFirstResParamKey;
                                 if (resJson.data) {
@@ -125,7 +125,7 @@ export default class Xhr {
             if (this.reche.fileMap[fileOrChunk.fileId].status !== this.reche.fileStatus.onProgress) {
                 this.reche.changeFileStatus(this.fileOrChunk.fileId, null, null, this.reche.fileStatus.onProgress)
             }
-            let path = this.fileOrChunk.index === -1 ? this.reche.option.path : this.reche.option.chunkPath;
+            let path = this.fileOrChunk.chunk === -1 ? this.reche.option.path : this.reche.option.chunkPath;
             this.xhr.open('POST', path, this.reche.option.async);
             this.setXhrHeader(this.xhr, this.reche.option.headers);
             this.startTime = new Date().getTime();
@@ -151,16 +151,21 @@ export default class Xhr {
      */
     buildFormData(fileOrChunk) {
         let formData = new FormData();
-        formData.append(this.reche.option.fdKey.fileKey, fileOrChunk.chunk);
-        formData.append(this.reche.option.fdKey.chunkKey, fileOrChunk.index);
-        formData.append(this.reche.option.fdKey.chunksKey, this.reche.fileMap[fileOrChunk.fileId].fileChunk.length.toString());
-        let resParam = this.reche.fileMap[fileOrChunk.fileId].resParam;
-        if (!resParam) {
-            formData.append(this.reche.option.fdKey.fileNameKey, this.reche.fileMap[fileOrChunk.fileId].fileName);
+        for(let item in this.reche.option.fdKey){
+            if(this.reche.fdKey[item]){
+                if(fileOrChunk.chunk === 1 && item === 'fileName'){
+                    formData.append(this.reche.option.fdKey[item],fileOrChunk[this.reche.fdKey[item]])
+                }else {
+                    formData.append(this.reche.option.fdKey[item],fileOrChunk[this.reche.fdKey[item]])
+                }
+            }
         }
+        let resParam = this.reche.fileMap[fileOrChunk.fileId].resParam;
         if (resParam) {
-            for (let item in resParam) {
-                formData.append(item, resParam[item])
+            for (let item in this.reche.option.chunkFirstResParamKey) {
+                if(resParam[item]){
+                    formData.append(item, resParam[item])
+                }
             }
         }
         if (this.reche.util.isObject(fileOrChunk.data) && fileOrChunk.data.toString() !== '{}') {

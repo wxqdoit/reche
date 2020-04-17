@@ -39,15 +39,6 @@ function doBundle(b) {
         .on('error', console.error.bind(console))
         .pipe(source('reche.js'))
         .pipe(buffer())
-
-        .pipe(uglify({
-            mangle: false,//类型：Boolean 默认：true 是否修改变量名
-            //删除注释
-            output: {
-                comments: false
-            },
-            compress: true
-        }))
         .pipe(sourcemaps.init({loadMaps: true}))
         .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest('./dist/'));
@@ -87,7 +78,7 @@ gulp.task('build', function () {
     return doBundle(b);
 });
 
-gulp.task('minimize', gulp.series( 'build'), function () {
+gulp.task('minimize', function () {
     let options =  {
         mangle: false,//类型：Boolean 默认：true 是否修改变量名
         //删除注释
@@ -96,12 +87,18 @@ gulp.task('minimize', gulp.series( 'build'), function () {
         },
         compress: true
     };
-
-
-    return gulp.src('dist/reche.js')
-        .pipe(rename({extname: '.min.js'}))
+    return browserify({
+        entries: 'src/index.js',
+        debug: true,
+        standalone: 'Reche',
+        transform: ['babelify', 'browserify-versionify'],
+        plugin: ['browserify-derequire']
+    }).bundle()
+        .on('error', console.error.bind(console))
+        .pipe(source('reche.min.js'))
+        .pipe(buffer())
         .pipe(uglify(options))
         .pipe(gulp.dest('./dist/'));
 });
 gulp.task('default', gulp.series('build'));
-gulp.task('release', gulp.series('build', 'minimize'));
+gulp.task('release', gulp.series('minimize'));
