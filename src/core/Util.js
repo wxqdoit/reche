@@ -73,4 +73,17 @@ export default class Util {
     isArray(val) {
         return val instanceof Array
     }
+
+    getNetSpeed(size,timeDiff){
+        let byteSpeed =size/timeDiff;
+        if(byteSpeed<1024){
+            return byteSpeed.toFixed(2)+'Byte/'+this.reche.i18n.i18n('netSpeedUnit');
+        }else if(byteSpeed<1024*1024) {
+            byteSpeed = (byteSpeed/1024).toFixed(2);
+            return byteSpeed+'Kb/'+this.reche.i18n.i18n('netSpeedUnit');
+        }else {
+            byteSpeed = (byteSpeed / 1024 / 1024).toFixed(2);
+            return byteSpeed + 'Mb/'+this.reche.i18n.i18n('netSpeedUnit');
+        }
+    }
 }

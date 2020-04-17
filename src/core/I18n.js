@@ -6,7 +6,12 @@ export default class I18n {
                 unSupportXhr:'您的浏览器不支持XHR请求',
                 cannotStopByProgress:'正在创建文件不能暂停',
                 cannotStopByUploaded:'文件已上传完成不能暂停',
-                cannotStop:'当前文件状态不能暂停'
+                cannotStop:'当前文件状态不能暂停',
+                netSpeedUnit:'秒'
+            },
+            'en':{
+                netSpeedUnit:'S',
+                unSupportXhr:'Your browser does not support XHR requests',
             }
         }
     }

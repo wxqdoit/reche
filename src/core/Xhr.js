@@ -3,7 +3,8 @@ export default class Xhr {
         this.reche = reche;
         this.xhr = this.initXhr();
         this.progress = 0;
-        this.fileOrChunk = null
+        this.fileOrChunk = null;
+        this.startTime = 0
     }
 
     /**
@@ -23,7 +24,7 @@ export default class Xhr {
         if (this.reche.option.async) {
             xhr.timeout = this.reche.option.timeout;
             xhr.upload.ontimeout = (e) => {
-                this.xhrError(this.fileOrChunk.fileId,xhr);
+                this.xhrError(this.fileOrChunk.fileId, xhr);
             };
         }
         xhr.upload.onprogress = (e) => {
@@ -43,19 +44,21 @@ export default class Xhr {
                             totalUpSize += this.reche.queue.queue.fileChunkOnCompleted[n].fileChunkSize
                         }
                     }
-                    progress = totalUpSize / this.reche.fileMap[this.fileOrChunk.fileId].fileSize
+                    progress = totalUpSize / this.reche.fileMap[this.fileOrChunk.fileId].fileSize;
                 }
             }
-
+            let speed = this.reche.util.getNetSpeed(this.fileOrChunk.fileChunkSize, (new Date().getTime() - this.startTime) / 1000);
+            this.reche.fileMap[this.fileOrChunk.fileId].netSpeed = speed;
             this.reche.fileMap[this.fileOrChunk.fileId].progress = progress;
             this.reche.event.trigger('fileProgress', {
                 event: 'event:::fileProgress',
                 fileId: this.fileOrChunk.fileId,
+                netSpeed :speed,
                 progress: progress,
             });
         };
         xhr.upload.onerror = (e) => {
-            this.xhrError(this.fileOrChunk.fileId,xhr);
+            this.xhrError(this.fileOrChunk.fileId, xhr);
         };
         xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
@@ -65,11 +68,11 @@ export default class Xhr {
                         // 这里已经传完了
                         // 1、文件上传队列位置改变
                         let fileOfMap = this.reche.fileMap[this.fileOrChunk.fileId];
-                        console.log("当前文件总块数：" + fileOfMap.fileChunk.length + "----已完成完成块数：" + this.fileOrChunk.index);
+                        // console.log("当前文件总块数：" + fileOfMap.fileChunk.length + "----已完成完成块数：" + this.fileOrChunk.index);
                         this.reche.queue.formProgressToCompleted(this.fileOrChunk);
                         if (this.fileOrChunk.index === -1) {
                             // 如果是小文件上传
-                            this.reche.changeFileStatus(this.fileOrChunk.fileId,null,null,this.reche.fileStatus.onCompleted);
+                            this.reche.changeFileStatus(this.fileOrChunk.fileId, null, null, this.reche.fileStatus.onCompleted);
                         } else {
                             // 如果是当前大文件块的第一块 绑定设置回传参数
                             if (this.fileOrChunk.index === 1) {
@@ -85,7 +88,7 @@ export default class Xhr {
                             //判断整个文件是否上传完
                             if (this.reche.queue.isComplete(this.fileOrChunk.fileId)) {
                                 // 文件状态改变
-                                this.reche.changeFileStatus(this.fileOrChunk.fileId,null,null,this.reche.fileStatus.onCompleted);
+                                this.reche.changeFileStatus(this.fileOrChunk.fileId, null, null, this.reche.fileStatus.onCompleted);
                             }
                         }
                         //本次任务完成 停止并移除Xhr
@@ -101,12 +104,10 @@ export default class Xhr {
                             this.reche.exeXhr()
                         }
                     } else {
-                        console.log(resJson)
-                        this.xhrError(this.fileOrChunk.fileId,xhr)
-
+                        this.xhrError(this.fileOrChunk.fileId, xhr)
                     }
                 } else {
-                    this.xhrError(this.fileOrChunk.fileId,xhr);
+                    this.xhrError(this.fileOrChunk.fileId, xhr);
                 }
             }
         };
@@ -122,22 +123,24 @@ export default class Xhr {
         if (this.xhr) {
             let fd = this.buildFormData(fileOrChunk);
             if (this.reche.fileMap[fileOrChunk.fileId].status !== this.reche.fileStatus.onProgress) {
-                this.reche.changeFileStatus(this.fileOrChunk.fileId,null,null,this.reche.fileStatus.onProgress)
+                this.reche.changeFileStatus(this.fileOrChunk.fileId, null, null, this.reche.fileStatus.onProgress)
             }
             let path = this.fileOrChunk.index === -1 ? this.reche.option.path : this.reche.option.chunkPath;
             this.xhr.open('POST', path, this.reche.option.async);
-            this.setXhrHeader(this.xhr,this.reche.option.headers);
+            this.setXhrHeader(this.xhr, this.reche.option.headers);
+            this.startTime = new Date().getTime();
             this.xhr.send(fd)
         }
     }
-    xhrError(fileId,xhr){
+
+    xhrError(fileId, xhr) {
         this.reche.abortAndRemoveXhr(fileId);
         this.reche.queue.deleteChunkOfQueue(fileId);
-        this.reche.changeFileStatus(fileId,null,null,this.reche.fileStatus.onError)
+        this.reche.changeFileStatus(fileId, null, null, this.reche.fileStatus.onError)
         this.reche.event.trigger('fileError', {
             event: 'event:::fileError',
             fileId: fileId,
-            xhr:xhr
+            xhr: xhr
         });
     }
 
@@ -185,9 +188,9 @@ export default class Xhr {
      * @param headers
      */
     setXhrHeader(xhr, headers) {
-        if(this.reche.util.isObject(headers) && headers.toString() !== '{}'){
-            for(let item in headers){
-                xhr.setRequestHeader(item,headers[item]);
+        if (this.reche.util.isObject(headers) && headers.toString() !== '{}') {
+            for (let item in headers) {
+                xhr.setRequestHeader(item, headers[item]);
             }
         }
     }

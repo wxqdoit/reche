@@ -14,11 +14,12 @@ export default class FileSlice {
             fileId: fileId,
             fileName: file.name,
             fileSize: file.size,
+            netSpeed:"",
             file: null,
             data:data,
             resParam:null,
             status: this.reche.fileStatus.onWaiting,
-            percent: 0,
+            progress: 0,
             fileChunk: []
         };
         if(this.reche.option.chunkUse && file.size >= this.reche.option.chunkUseSize){

@@ -53,11 +53,11 @@ $("#upload").click(function(){
 })
 ```
 
-CommonJS规范引入
+vue、react
 ```js
-let Reche = require('reche');
-let r = new Reche(Object)
-r.reche(Object)
+import Reche from 'reche';
+let r = new Reche(Object);
+r.reche(Object);
 ``` 
 
 ## 配置项
@@ -70,9 +70,9 @@ r.reche(Object)
 | path                 | [String] ''                         | 普通文件上传接口                                                      |
 | chunkPath            | [String] ''                         | 分片上传接口                                                          |
 | timeout              | [Number] 1000 * 60 *60              | 请求超时时间 默认1小时                                                 |
-| chunkThreadNumber    | [Number] 5                          | 分片上传时开启的任务数(目前仅实现单人位，暂不可用)                         |
+| chunkThreadNumber    | [Number] 5                          | 分片上传时开启的任务数(目前仅实现单任务，暂不可用)                         |
 | chunkFirstResParamKey| [Object][#chunkFirstResParamKey](#chunkFirstResParamKey)| 分配上传时第一片上传完成返回的数据中需要回传的参数key                      |
-| lang                 | [String] 'zh-cn'                    | 语言(暂不可用)                                                        |
+| lang                 | [String] 'zh-cn'                    | 语言                                                                 |
 | async                | [Boolean] true                      | 是否开启异步(设置为false将监听不到上传进度)                              |
 | headers              | [Object] [#headers](#headers)       | 设置自定义请求头                                                       |
 | fdKey                | [Object] [#fdKey](#fdKey)           | 设置分片上传字段的自定义key                                             |
@@ -102,6 +102,36 @@ fdKey = {
 }
 ```
 
+## fileMap对象
+
+fileMap对象由Reche实例化后返回
+```js
+let reche = new Reche({});
+let fileMap = reche.fileMap;
+```
+
+- 文件id为8位随机字符串，不会在上传任务中重复
+- file与fileChunk只有一个有值
+- netSpeed、status、progress会实时改变
+```
+fileMap = {
+    3o8AlUdO:{
+        fileId: "3o8AlUdO" //文件id
+        fileName: "a0cb02df35894384b2d12822fdaa6e87.PNG" //文件名
+        fileSize: 2527 //文件大小（byte）
+        netSpeed: "23.50Kb/秒" //文件上传实时网速
+        file: File //文件
+        data: Object //上传时的自定义参数
+        resParam: null //回传参数
+        status: 2 //文件实时状态
+        progress: 1 //文件实时上传进度
+        fileChunk: Array(0) //文件块
+    }
+    ...
+    ...
+    ...
+}
+```
 ## 文件状态
 ```js
 reche.fileStatus = {
@@ -196,6 +226,7 @@ recheEvents = [
 - `reche.on('fileProgress',callBack)`：由xhr原生进度事件触发
     - event.fileId
     - event.event
+    - event.netSpeed    
     - event.progress
 
 - `reche.on('fileStatusChange',callBack)`
