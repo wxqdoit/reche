@@ -1,6 +1,6 @@
 {
   "name": "reche",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "File upload in chunks",
   "main": "dist/reche.min.js",
   "scripts": {

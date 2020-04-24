@@ -82,8 +82,8 @@ r.reche(Object);
 - 默认为：
 ```js
 chunkFirstResParamKey = {
-    uploadId: 'uploadId',
-    fileName: 'fileName'
+    uploadIdKey: 'uploadId',
+    fileNameKey: 'fileName'
 };
 ```
 

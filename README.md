@@ -1,3 +1,4 @@
+
 # Reche
 文件分片断点上传
 
@@ -76,8 +77,8 @@ r.reche(Object);
 - 默认为：
 ```js
 chunkFirstResParamKey = {
-    uploadId: 'uploadId',
-    fileName: 'fileName'
+    uploadIdKey: 'uploadId',
+    fileNameKey: 'fileName'
 };
 ```
 

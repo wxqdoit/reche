@@ -26,8 +26,8 @@ export default class Option {
             }
         }
         let chunkFirstResParamKey = {
-            uploadId: 'uploadId',
-            fileName: 'fileName'
+            uploadIdKey: 'uploadId',
+            fileNameKey: 'fileName'
         };
         if (option.chunkFirstResParamKey) {
             for (const item in chunkFirstResParamKey) {

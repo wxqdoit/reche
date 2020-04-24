@@ -53,7 +53,7 @@ export default class Xhr {
             this.reche.event.trigger('fileProgress', {
                 event: 'event:::fileProgress',
                 fileId: this.fileOrChunk.fileId,
-                netSpeed :speed,
+                netSpeed: speed,
                 progress: progress,
             });
         };
@@ -151,19 +151,21 @@ export default class Xhr {
      */
     buildFormData(fileOrChunk) {
         let formData = new FormData();
-        for(let item in this.reche.option.fdKey){
-            if(this.reche.fdKey[item]){
-                if(fileOrChunk.chunk === 1 && item === 'fileName'){
-                    formData.append(this.reche.option.fdKey[item],fileOrChunk[this.reche.fdKey[item]])
-                }else {
-                    formData.append(this.reche.option.fdKey[item],fileOrChunk[this.reche.fdKey[item]])
+        for (let item in this.reche.option.fdKey) {
+            if (this.reche.fdKey[item]) {
+                if (fileOrChunk.chunk === 1) {
+                    formData.append(this.reche.option.fdKey[item], fileOrChunk[this.reche.fdKey[item]])
+                } else {
+                    if (item !== 'fileNameKey') {
+                        formData.append(this.reche.option.fdKey[item], fileOrChunk[this.reche.fdKey[item]])
+                    }
                 }
             }
         }
         let resParam = this.reche.fileMap[fileOrChunk.fileId].resParam;
         if (resParam) {
-            for (let item in this.reche.option.chunkFirstResParamKey) {
-                if(resParam[item]){
+            for (let item in resParam) {
+                if (resParam[item]) {
                     formData.append(item, resParam[item])
                 }
             }

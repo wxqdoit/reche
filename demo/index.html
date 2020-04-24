@@ -104,9 +104,12 @@
                 },
                 chunkSize: 5 << 20,//分片大小 默认5M
                 chunkUseSize: 10 << 20,//使用分片上传时文件最小大小 默认10M
-                chunkFirstResParamKey:["fileName","uploadId"],
+                chunkFirstResParamKey:{
+                    uploadIdKey: 'uploadId',
+                    fileNameKey: 'fileName',
+                },
                 headers: {
-                    token: '916fc8fa-1943-4b7d-b14b-8a8a16d9fce4'
+                    token: '29dd62cb-5af8-49a4-b772-db4fbd620ec7'
                 },
                 chunkThreadNumber: 5,//分片上传时，开启的线程数，
                 chunkUse: true,//是否开启分片上传 默认开启

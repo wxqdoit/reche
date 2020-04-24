@@ -305,8 +305,8 @@ var Option = /*#__PURE__*/function () {
       }
 
       var chunkFirstResParamKey = {
-        uploadId: 'uploadId',
-        fileName: 'fileName'
+        uploadIdKey: 'uploadId',
+        fileNameKey: 'fileName'
       };
 
       if (option.chunkFirstResParamKey) {
@@ -939,7 +939,7 @@ Object.defineProperty(Reche, 'version', {
   enumerable: true,
   get: function get() {
     // replaced by browserify-versionify transform
-    return '0.0.6';
+    return '0.0.7';
   }
 });
 var _default = Reche;
@@ -1279,10 +1279,12 @@ var Xhr = /*#__PURE__*/function () {
 
       for (var item in this.reche.option.fdKey) {
         if (this.reche.fdKey[item]) {
-          if (fileOrChunk.chunk === 1 && item === 'fileName') {
+          if (fileOrChunk.chunk === 1) {
             formData.append(this.reche.option.fdKey[item], fileOrChunk[this.reche.fdKey[item]]);
           } else {
-            formData.append(this.reche.option.fdKey[item], fileOrChunk[this.reche.fdKey[item]]);
+            if (item !== 'fileNameKey') {
+              formData.append(this.reche.option.fdKey[item], fileOrChunk[this.reche.fdKey[item]]);
+            }
           }
         }
       }
@@ -1290,7 +1292,7 @@ var Xhr = /*#__PURE__*/function () {
       var resParam = this.reche.fileMap[fileOrChunk.fileId].resParam;
 
       if (resParam) {
-        for (var _item in this.reche.option.chunkFirstResParamKey) {
+        for (var _item in resParam) {
           if (resParam[_item]) {
             formData.append(_item, resParam[_item]);
           }
