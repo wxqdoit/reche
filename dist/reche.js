@@ -578,7 +578,11 @@ var Queue = /*#__PURE__*/function () {
         }
       }
 
-      return tag === this.reche.fileMap[fileId].fileChunk.length;
+      if (this.reche.fileMap[fileId]) {
+        return tag === this.reche.fileMap[fileId].fileChunk.length;
+      } else {
+        return true;
+      }
     }
     /**
      * 是否完成了当前选择的所有文件的任务
@@ -759,16 +763,18 @@ var Reche = /*#__PURE__*/function () {
      * todo 暂时不启用
      * @returns {{fileMap: ({}|*)}}
      */
-    // removeAll() {
-    //     this.fileMap = {};
-    //     this.queue.removeFileChunk();
-    //     this.abortAndRemoveXhr();
-    //     this.event.trigger('fileRemoveAll', {
-    //         event: 'event:::fileRemoveAll',
-    //         fileMap: this.fileMap
-    //     });
-    // }
 
+  }, {
+    key: "removeAll",
+    value: function removeAll() {
+      this.fileMap = {};
+      this.abortAndRemoveXhr();
+      this.queue.removeFileChunk();
+      this.event.trigger('fileRemoveAll', {
+        event: 'event:::fileRemoveAll',
+        fileMap: this.fileMap
+      });
+    }
     /**
      * 删除某个上传任务
      * @param fileId
@@ -794,6 +800,8 @@ var Reche = /*#__PURE__*/function () {
     key: "stop",
     value: function stop(fileId) {
       if (this.fileMap[fileId]) {
+        console.log(fileId, this.fileMap[fileId].file);
+
         if (this.fileMap[fileId].file) {
           this.event.trigger('fileStop', {
             event: 'event:::fileStop',
@@ -869,8 +877,6 @@ var Reche = /*#__PURE__*/function () {
     key: "resume",
     value: function resume(fileId) {
       if (this.fileMap[fileId] && this.fileMap[fileId].status === this.fileStatus.onStopped) {
-        console.log(this.queue.queue.fileChunkOnProgress);
-
         if (this.queue.queue.fileChunkOnProgress.length === 0) {
           this.changeFileStatus(null, fileId, this.fileStatus.onProgress, this.fileStatus.onWaiting);
           this.removeFileIdFormStoppedId(fileId);
@@ -939,7 +945,7 @@ Object.defineProperty(Reche, 'version', {
   enumerable: true,
   get: function get() {
     // replaced by browserify-versionify transform
-    return '0.0.7';
+    return '0.0.9';
   }
 });
 var _default = Reche;
@@ -1128,41 +1134,43 @@ var Xhr = /*#__PURE__*/function () {
       }
 
       xhr.upload.onprogress = function (e) {
-        var progress = 0;
+        var progress = 0; //是否被删除了
 
-        if (e.lengthComputable) {
-          _this.progress = e.loaded / e.total;
+        if (_this.reche.fileMap[_this.fileOrChunk.fileId]) {
+          if (e.lengthComputable) {
+            _this.progress = e.loaded / e.total;
 
-          if (_this.fileOrChunk.chunk === -1) {
-            progress = e.loaded / e.total;
-          } else {
-            var totalUpSize = 0; //获取整个文件上传进度
+            if (_this.fileOrChunk.chunk === -1) {
+              progress = e.loaded / e.total;
+            } else {
+              var totalUpSize = 0; //获取整个文件上传进度
 
-            for (var i = 0; i < _this.reche.xhrList.length; i++) {
-              totalUpSize += _this.reche.xhrList[i].fileOrChunk.fileChunkSize * _this.progress;
-            }
-
-            for (var n = 0; n < _this.reche.queue.queue.fileChunkOnCompleted.length; n++) {
-              if (_this.fileOrChunk.fileId === _this.reche.queue.queue.fileChunkOnCompleted[n].fileId) {
-                totalUpSize += _this.reche.queue.queue.fileChunkOnCompleted[n].fileChunkSize;
+              for (var i = 0; i < _this.reche.xhrList.length; i++) {
+                totalUpSize += _this.reche.xhrList[i].fileOrChunk.fileChunkSize * _this.progress;
               }
+
+              for (var n = 0; n < _this.reche.queue.queue.fileChunkOnCompleted.length; n++) {
+                if (_this.fileOrChunk.fileId === _this.reche.queue.queue.fileChunkOnCompleted[n].fileId) {
+                  totalUpSize += _this.reche.queue.queue.fileChunkOnCompleted[n].fileChunkSize;
+                }
+              }
+
+              progress = totalUpSize / _this.reche.fileMap[_this.fileOrChunk.fileId].fileSize;
             }
-
-            progress = totalUpSize / _this.reche.fileMap[_this.fileOrChunk.fileId].fileSize;
           }
+
+          var speed = _this.reche.util.getNetSpeed(_this.fileOrChunk.fileChunkSize, (new Date().getTime() - _this.startTime) / 1000);
+
+          _this.reche.fileMap[_this.fileOrChunk.fileId].netSpeed = speed;
+          _this.reche.fileMap[_this.fileOrChunk.fileId].progress = progress;
+
+          _this.reche.event.trigger('fileProgress', {
+            event: 'event:::fileProgress',
+            fileId: _this.fileOrChunk.fileId,
+            netSpeed: speed,
+            progress: progress
+          });
         }
-
-        var speed = _this.reche.util.getNetSpeed(_this.fileOrChunk.fileChunkSize, (new Date().getTime() - _this.startTime) / 1000);
-
-        _this.reche.fileMap[_this.fileOrChunk.fileId].netSpeed = speed;
-        _this.reche.fileMap[_this.fileOrChunk.fileId].progress = progress;
-
-        _this.reche.event.trigger('fileProgress', {
-          event: 'event:::fileProgress',
-          fileId: _this.fileOrChunk.fileId,
-          netSpeed: speed,
-          progress: progress
-        });
       };
 
       xhr.upload.onerror = function (e) {
@@ -1170,60 +1178,63 @@ var Xhr = /*#__PURE__*/function () {
       };
 
       xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
-            var resJson = JSON.parse(xhr.response);
+        //是否被删了
+        if (_this.reche.fileMap[_this.fileOrChunk.fileId]) {
+          if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+              var resJson = JSON.parse(xhr.response);
 
-            if (Number(resJson.status) === 200) {
-              // 这里已经传完了
-              // 1、文件上传队列位置改变
-              var fileOfMap = _this.reche.fileMap[_this.fileOrChunk.fileId]; // console.log("当前文件总块数：" + fileOfMap.fileChunk.length + "----已完成完成块数：" + this.fileOrChunk.chunk);
+              if (Number(resJson.status) === 200) {
+                // 这里已经传完了
+                // 1、文件上传队列位置改变
+                var fileOfMap = _this.reche.fileMap[_this.fileOrChunk.fileId]; // console.log("当前文件总块数：" + fileOfMap.fileChunk.length + "----已完成完成块数：" + this.fileOrChunk.chunk);
 
-              _this.reche.queue.formProgressToCompleted(_this.fileOrChunk);
+                _this.reche.queue.formProgressToCompleted(_this.fileOrChunk);
 
-              if (_this.fileOrChunk.chunk === -1) {
-                // 如果是小文件上传
-                _this.reche.changeFileStatus(_this.fileOrChunk.fileId, null, null, _this.reche.fileStatus.onCompleted);
-              } else {
-                // 如果是当前大文件块的第一块 绑定设置回传参数
-                if (_this.fileOrChunk.chunk === 1) {
-                  var resParam = {};
-                  var cusfrpk = _this.reche.option.chunkFirstResParamKey;
-
-                  if (resJson.data) {
-                    for (var item in cusfrpk) {
-                      resParam[cusfrpk[item]] = resJson.data[cusfrpk[item]];
-                    }
-
-                    _this.reche.fileMap[_this.fileOrChunk.fileId].resParam = resParam;
-                  }
-                } //判断整个文件是否上传完
-
-
-                if (_this.reche.queue.isComplete(_this.fileOrChunk.fileId)) {
-                  // 文件状态改变
+                if (_this.fileOrChunk.chunk === -1) {
+                  // 如果是小文件上传
                   _this.reche.changeFileStatus(_this.fileOrChunk.fileId, null, null, _this.reche.fileStatus.onCompleted);
+                } else {
+                  // 如果是当前大文件块的第一块 绑定设置回传参数
+                  if (_this.fileOrChunk.chunk === 1) {
+                    var resParam = {};
+                    var cusfrpk = _this.reche.option.chunkFirstResParamKey;
+
+                    if (resJson.data) {
+                      for (var item in cusfrpk) {
+                        resParam[cusfrpk[item]] = resJson.data[cusfrpk[item]];
+                      }
+
+                      _this.reche.fileMap[_this.fileOrChunk.fileId].resParam = resParam;
+                    }
+                  } //判断整个文件是否上传完
+
+
+                  if (_this.reche.queue.isComplete(_this.fileOrChunk.fileId)) {
+                    // 文件状态改变
+                    _this.reche.changeFileStatus(_this.fileOrChunk.fileId, null, null, _this.reche.fileStatus.onCompleted);
+                  }
+                } //本次任务完成 停止并移除Xhr
+
+
+                _this.reche.abortAndRemoveXhr(_this.fileOrChunk.fileId); // 判断是否所有任务完成
+
+
+                if (_this.reche.queue.isCompleteAll()) {
+                  _this.reche.event.trigger('fileCompleteAll', {
+                    event: 'event:::fileCompleteAll',
+                    response: xhr.response
+                  });
+                } else {
+                  //执行下次任务
+                  _this.reche.exeXhr();
                 }
-              } //本次任务完成 停止并移除Xhr
-
-
-              _this.reche.abortAndRemoveXhr(_this.fileOrChunk.fileId); // 判断是否所有任务完成
-
-
-              if (_this.reche.queue.isCompleteAll()) {
-                _this.reche.event.trigger('fileCompleteAll', {
-                  event: 'event:::fileCompleteAll',
-                  response: xhr.response
-                });
               } else {
-                //执行下次任务
-                _this.reche.exeXhr();
+                _this.xhrError(_this.fileOrChunk.fileId, xhr);
               }
             } else {
               _this.xhrError(_this.fileOrChunk.fileId, xhr);
             }
-          } else {
-            _this.xhrError(_this.fileOrChunk.fileId, xhr);
           }
         }
       };

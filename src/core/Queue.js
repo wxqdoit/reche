@@ -204,7 +204,11 @@ export default class Queue {
                 tag += 1
             }
         }
-        return tag === this.reche.fileMap[fileId].fileChunk.length;
+        if(this.reche.fileMap[fileId]){
+            return tag === this.reche.fileMap[fileId].fileChunk.length;
+        }else{
+            return true
+        }
     }
 
     /**

@@ -29,87 +29,95 @@ export default class Xhr {
         }
         xhr.upload.onprogress = (e) => {
             let progress = 0;
-            if (e.lengthComputable) {
-                this.progress = e.loaded / e.total;
-                if (this.fileOrChunk.chunk === -1) {
-                    progress = e.loaded / e.total
-                } else {
-                    let totalUpSize = 0;
-                    //获取整个文件上传进度
-                    for (let i = 0; i < this.reche.xhrList.length; i++) {
-                        totalUpSize += (this.reche.xhrList[i].fileOrChunk.fileChunkSize * this.progress)
-                    }
-                    for (let n = 0; n < this.reche.queue.queue.fileChunkOnCompleted.length; n++) {
-                        if (this.fileOrChunk.fileId === this.reche.queue.queue.fileChunkOnCompleted[n].fileId) {
-                            totalUpSize += this.reche.queue.queue.fileChunkOnCompleted[n].fileChunkSize
+            //是否被删除了
+            if( this.reche.fileMap[this.fileOrChunk.fileId]){
+                if (e.lengthComputable) {
+                    this.progress = e.loaded / e.total;
+                    if (this.fileOrChunk.chunk === -1) {
+                        progress = e.loaded / e.total
+                    } else {
+                        let totalUpSize = 0;
+                        //获取整个文件上传进度
+                        for (let i = 0; i < this.reche.xhrList.length; i++) {
+                            totalUpSize += (this.reche.xhrList[i].fileOrChunk.fileChunkSize * this.progress)
                         }
+                        for (let n = 0; n < this.reche.queue.queue.fileChunkOnCompleted.length; n++) {
+                            if (this.fileOrChunk.fileId === this.reche.queue.queue.fileChunkOnCompleted[n].fileId) {
+                                totalUpSize += this.reche.queue.queue.fileChunkOnCompleted[n].fileChunkSize
+                            }
+                        }
+                        progress = totalUpSize / this.reche.fileMap[this.fileOrChunk.fileId].fileSize;
                     }
-                    progress = totalUpSize / this.reche.fileMap[this.fileOrChunk.fileId].fileSize;
                 }
+                let speed = this.reche.util.getNetSpeed(this.fileOrChunk.fileChunkSize, (new Date().getTime() - this.startTime) / 1000);
+                this.reche.fileMap[this.fileOrChunk.fileId].netSpeed = speed;
+                this.reche.fileMap[this.fileOrChunk.fileId].progress = progress;
+                this.reche.event.trigger('fileProgress', {
+                    event: 'event:::fileProgress',
+                    fileId: this.fileOrChunk.fileId,
+                    netSpeed: speed,
+                    progress: progress,
+                });
             }
-            let speed = this.reche.util.getNetSpeed(this.fileOrChunk.fileChunkSize, (new Date().getTime() - this.startTime) / 1000);
-            this.reche.fileMap[this.fileOrChunk.fileId].netSpeed = speed;
-            this.reche.fileMap[this.fileOrChunk.fileId].progress = progress;
-            this.reche.event.trigger('fileProgress', {
-                event: 'event:::fileProgress',
-                fileId: this.fileOrChunk.fileId,
-                netSpeed: speed,
-                progress: progress,
-            });
+
         };
         xhr.upload.onerror = (e) => {
             this.xhrError(this.fileOrChunk.fileId, xhr);
         };
         xhr.onreadystatechange = () => {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
-                    let resJson = JSON.parse(xhr.response);
-                    if (Number(resJson.status) === 200) {
-                        // 这里已经传完了
-                        // 1、文件上传队列位置改变
-                        let fileOfMap = this.reche.fileMap[this.fileOrChunk.fileId];
-                        // console.log("当前文件总块数：" + fileOfMap.fileChunk.length + "----已完成完成块数：" + this.fileOrChunk.chunk);
-                        this.reche.queue.formProgressToCompleted(this.fileOrChunk);
-                        if (this.fileOrChunk.chunk === -1) {
-                            // 如果是小文件上传
-                            this.reche.changeFileStatus(this.fileOrChunk.fileId, null, null, this.reche.fileStatus.onCompleted);
-                        } else {
-                            // 如果是当前大文件块的第一块 绑定设置回传参数
-                            if (this.fileOrChunk.chunk === 1) {
-                                let resParam = {};
-                                let cusfrpk = this.reche.option.chunkFirstResParamKey;
-                                if (resJson.data) {
-                                    for (let item in cusfrpk) {
-                                        resParam[cusfrpk[item]] = resJson.data[cusfrpk[item]]
+            //是否被删了
+            if(this.reche.fileMap[this.fileOrChunk.fileId]){
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        let resJson = JSON.parse(xhr.response);
+                        if (Number(resJson.status) === 200) {
+                            // 这里已经传完了
+                            // 1、文件上传队列位置改变
+                            let fileOfMap = this.reche.fileMap[this.fileOrChunk.fileId];
+                            // console.log("当前文件总块数：" + fileOfMap.fileChunk.length + "----已完成完成块数：" + this.fileOrChunk.chunk);
+                            this.reche.queue.formProgressToCompleted(this.fileOrChunk);
+                            if (this.fileOrChunk.chunk === -1) {
+                                // 如果是小文件上传
+                                this.reche.changeFileStatus(this.fileOrChunk.fileId, null, null, this.reche.fileStatus.onCompleted);
+                            } else {
+                                // 如果是当前大文件块的第一块 绑定设置回传参数
+                                if (this.fileOrChunk.chunk === 1) {
+                                    let resParam = {};
+                                    let cusfrpk = this.reche.option.chunkFirstResParamKey;
+                                    if (resJson.data) {
+                                        for (let item in cusfrpk) {
+                                            resParam[cusfrpk[item]] = resJson.data[cusfrpk[item]]
+                                        }
+                                        this.reche.fileMap[this.fileOrChunk.fileId].resParam = resParam
                                     }
-                                    this.reche.fileMap[this.fileOrChunk.fileId].resParam = resParam
+                                }
+                                //判断整个文件是否上传完
+                                if (this.reche.queue.isComplete(this.fileOrChunk.fileId)) {
+                                    // 文件状态改变
+                                    this.reche.changeFileStatus(this.fileOrChunk.fileId, null, null, this.reche.fileStatus.onCompleted);
                                 }
                             }
-                            //判断整个文件是否上传完
-                            if (this.reche.queue.isComplete(this.fileOrChunk.fileId)) {
-                                // 文件状态改变
-                                this.reche.changeFileStatus(this.fileOrChunk.fileId, null, null, this.reche.fileStatus.onCompleted);
+                            //本次任务完成 停止并移除Xhr
+                            this.reche.abortAndRemoveXhr(this.fileOrChunk.fileId);
+                            // 判断是否所有任务完成
+                            if (this.reche.queue.isCompleteAll()) {
+                                this.reche.event.trigger('fileCompleteAll', {
+                                    event: 'event:::fileCompleteAll',
+                                    response: xhr.response
+                                });
+                            } else {
+                                //执行下次任务
+                                this.reche.exeXhr()
                             }
-                        }
-                        //本次任务完成 停止并移除Xhr
-                        this.reche.abortAndRemoveXhr(this.fileOrChunk.fileId);
-                        // 判断是否所有任务完成
-                        if (this.reche.queue.isCompleteAll()) {
-                            this.reche.event.trigger('fileCompleteAll', {
-                                event: 'event:::fileCompleteAll',
-                                response: xhr.response
-                            });
                         } else {
-                            //执行下次任务
-                            this.reche.exeXhr()
+                            this.xhrError(this.fileOrChunk.fileId, xhr)
                         }
                     } else {
-                        this.xhrError(this.fileOrChunk.fileId, xhr)
+                        this.xhrError(this.fileOrChunk.fileId, xhr);
                     }
-                } else {
-                    this.xhrError(this.fileOrChunk.fileId, xhr);
                 }
             }
+
         };
         return xhr
     }

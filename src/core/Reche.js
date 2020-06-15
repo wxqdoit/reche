@@ -119,15 +119,15 @@ class Reche {
      * todo 暂时不启用
      * @returns {{fileMap: ({}|*)}}
      */
-    // removeAll() {
-    //     this.fileMap = {};
-    //     this.queue.removeFileChunk();
-    //     this.abortAndRemoveXhr();
-    //     this.event.trigger('fileRemoveAll', {
-    //         event: 'event:::fileRemoveAll',
-    //         fileMap: this.fileMap
-    //     });
-    // }
+    removeAll() {
+        this.fileMap = {};
+        this.abortAndRemoveXhr();
+        this.queue.removeFileChunk();
+        this.event.trigger('fileRemoveAll', {
+            event: 'event:::fileRemoveAll',
+            fileMap: this.fileMap
+        });
+    }
 
     /**
      * 删除某个上传任务
@@ -152,6 +152,7 @@ class Reche {
 
     stop(fileId){
         if(this.fileMap[fileId]){
+            console.log(fileId,this.fileMap[fileId].file)
             if(this.fileMap[fileId].file){
                 this.event.trigger('fileStop', {
                     event: 'event:::fileStop',
@@ -218,7 +219,7 @@ class Reche {
     }
     resume(fileId){
         if(this.fileMap[fileId] && this.fileMap[fileId].status === this.fileStatus.onStopped){
-            console.log(this.queue.queue.fileChunkOnProgress);
+
             if(this.queue.queue.fileChunkOnProgress.length === 0){
                 this.changeFileStatus(null,fileId,this.fileStatus.onProgress,this.fileStatus.onWaiting);
                 this.removeFileIdFormStoppedId(fileId);

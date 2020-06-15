@@ -190,7 +190,7 @@ recheEvents = [
     "fileCancel",//文件取消上传
     "fileRestart",//文件重新上传
     "fileRemove",//文件移除
-    "fileRemoveAll",//文件全部移除 【不可用】
+    "fileRemoveAll",//文件全部移除
     "fileAppend",//文件添加到任务列表
     "fileCompleteAll",//本次选择的文件上传任务全部完成
     "fileProgress",//文件上传进度改变
