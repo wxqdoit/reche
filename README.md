@@ -73,7 +73,7 @@ r.reche(Object);
 | fdKey                | [Object] [#fdKey](#fdKey)           | 设置分片上传字段的自定义key                                             |
 
 ### chunkFirstResParamKey
-- 分配上传时第一片上传完成返回的数据中需要回传的参数key
+- 分配上传时第一片上传完成返回的数据中需回传的参数key
 - 默认为：
 ```js
 chunkFirstResParamKey = {
